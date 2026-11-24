@@ -1,0 +1,37 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // OpenMeet – single Worker serving the API and the static React app.
+  "name": "openmeet",
+  "main": "src/server/index.ts",
+  "compatibility_date": "2026-11-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "upload_source_maps": true,
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    // API, OAuth callbacks, embed bootstrap and ICS feeds are handled by the Worker first.
+    "run_worker_first": ["/api/*", "/auth/*", "/ics/*", "/healthz"]
+  },
+  // Database is provisioned automatically by the Deploy-to-Cloudflare button
+  // and by `wrangler deploy` (automatic resource provisioning). No IDs are
+  // committed to this repository.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "openmeet",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // Reminders, retries, workflow delays and cleanup.
+  "triggers": { "crons": ["* * * * *"] },
+  "rules": [{ "type": "Text", "globs": ["**/*.sql"], "fallthrough": true }],
+  "vars": {
+    // Optional. Leave empty to use the request origin (works on workers.dev out of the box).
+    "PUBLIC_BASE_URL": "",
+    // Comma separated list of additional allowed hostnames (custom domains).
+    "ALLOWED_HOSTS": "",
+    "APP_VERSION": "0.1.0"
+  }
+}

@@ -1,0 +1,5 @@
+# Required secrets. The Deploy-to-Cloudflare button asks for these values.
+# Generate with: openssl rand -hex 24
+SETUP_TOKEN=change-me-to-a-long-random-string
+# Generate with: openssl rand -hex 32  (64 hex chars). Never change after first use.
+ENCRYPTION_KEY=0000000000000000000000000000000000000000000000000000000000000000

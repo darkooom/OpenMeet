@@ -1,0 +1,10 @@
+{
+  "name": "@openmeet/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript client for the OpenMeet REST API",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "files": ["index.ts", "README.md"]
+}
