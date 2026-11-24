@@ -24,7 +24,8 @@
     "test:e2e": "playwright test",
     "cf-typegen": "wrangler types src/server/worker-configuration.d.ts --include-runtime false",
     "check:deploy": "vite build && wrangler deploy --dry-run --outdir .wrangler/dry-run",
-    "audit": "npm audit --omit=dev --audit-level=high"
+    "audit": "npm audit --omit=dev --audit-level=high",
+    "readme:screens": "vite build && node scripts/readme-screens.mjs"
   },
   "cloudflare": {
     "bindings": {

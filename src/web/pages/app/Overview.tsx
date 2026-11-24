@@ -50,6 +50,13 @@ const ACTION_LABELS: Record<string, string> = {
   "integration.connected": "Integration connected",
 };
 
+function humanize(action: string) {
+  const [, verb = action] = action.split(".");
+  const subject = action.split(".")[0]!.replace(/_/g, " ");
+  const text = `${subject} ${verb.replace(/_/g, " ")}`;
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 export default function Overview() {
   const user = useUser();
   const q = useQuery({ queryKey: ["overview"], queryFn: () => get<OverviewData>("/api/insights/overview") });
@@ -182,7 +189,7 @@ export default function Overview() {
               <ul className="flex flex-col gap-2.5 px-5 py-4 text-[13px]">
                 {d.activity.map((a, i) => (
                   <li key={i} className="flex justify-between gap-3">
-                    <span>{ACTION_LABELS[a.action] ?? a.action}</span>
+                    <span>{ACTION_LABELS[a.action] ?? humanize(a.action)}</span>
                     <time className="shrink-0 text-faint tabular">{new Date(a.createdAt).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</time>
                   </li>
                 ))}

@@ -1,154 +1,360 @@
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/darkooom/OpenMeet)
+<p align="center">
+  <img src="docs/readme/hero.jpg" alt="OpenMeet: open-source scheduling you own, running on Cloudflare" width="100%">
+</p>
 
-# OpenMeet
+<p align="center">
+  <a href="https://github.com/darkooom/OpenMeet/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/darkooom/OpenMeet/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://developers.cloudflare.com/workers/"><img alt="Cloudflare Workers" src="https://img.shields.io/badge/Cloudflare-Workers%20%2B%20D1-F38020?logo=cloudflare&logoColor=white"></a>
+  <a href="https://react.dev/"><img alt="React 19" src="https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white"></a>
+  <a href="https://www.typescriptlang.org/"><img alt="TypeScript 5" src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white"></a>
+  <a href="https://tailwindcss.com/"><img alt="Tailwind CSS 4" src="https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white"></a>
+  <a href="./LICENSE"><img alt="AGPL-3.0 License" src="https://img.shields.io/badge/License-AGPL--3.0-1F7A5C.svg"></a>
+</p>
 
-**Open-source scheduling for people and teams – self-hosted on Cloudflare in one click.**
+<p align="center">
+  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/darkooom/OpenMeet"><b>Deploy to Cloudflare</b></a>
+  &nbsp;·&nbsp;
+  <a href="./DEPLOYMENT.md"><b>Deployment guide</b></a>
+  &nbsp;·&nbsp;
+  <a href="./docs/api.md"><b>API docs</b></a>
+</p>
 
-OpenMeet lets people book time with you without the back-and-forth: share a link, visitors pick a free slot, and the meeting lands in your calendar. It runs as a single Cloudflare Worker with a D1 database – no servers, containers, Postgres or Redis – and fits comfortably in Cloudflare's free plan for small teams.
+<br>
 
-![Public booking page](docs/screenshots/booking-page.jpg)
+Booking a meeting should take one link and one click. Most scheduling tools
+make that easy, but you rent them: your calendar, your customers' data and
+your booking pages live on someone else's servers, priced per seat.
 
-| Dashboard | Availability (dark mode) |
-| --- | --- |
-| ![Dashboard](docs/screenshots/dashboard.jpg) | ![Availability editor](docs/screenshots/availability-dark.jpg) |
+**OpenMeet is a scheduling platform you run yourself.** Booking pages, team
+scheduling, calendar sync, reminders, workflows and an API, deployed to your own
+Cloudflare account in one click. One Worker, one D1 database. No servers,
+no containers, no Postgres, no Redis, and it fits Cloudflare's free plan for
+small teams.
 
-| Booking confirmed | Setup wizard |
-| --- | --- |
-| ![Confirmation](docs/screenshots/booking-confirmed.jpg) | ![Setup wizard](docs/screenshots/setup-wizard.jpg) |
+<p align="center">
+  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/darkooom/OpenMeet"><img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare"></a>
+</p>
 
-_Screenshots of the actual application running locally (`wrangler dev`)._
-
-## Features
-
-**Scheduling**
-- Unlimited event types: one-on-one, group (seats), collective (all hosts) and round robin
-- Multiple durations, buffers, minimum notice, booking window, daily/weekly limits, custom start intervals
-- Custom booking questions, required fields, redirects, confirmation texts, brand colours
-- Manual confirmation, private event types and single-use booking links
-- Locations: Google Meet, Microsoft Teams, Zoom, Jitsi, custom video link, phone, in person
-- Availability editor: multiple schedules, several ranges per day, date overrides for holidays, vacation and special hours
-- IANA time zones with correct DST handling; times stored in UTC
-- **Atomic double-booking protection** enforced by D1 triggers (proven by parallel-request tests)
-- Reschedule & cancel links for attendees, ICS files, "add to Google Calendar"
-
-**Integrations**
-- Google Calendar & Microsoft 365/Outlook: OAuth (PKCE), free/busy conflict checks, event creation/update/deletion, token refresh
-- CalDAV (iCloud, Fastmail, Nextcloud …) and read-only ICS feeds
-- E-mail via Resend, Brevo or Postmark: confirmations, cancellations, reschedules, reminders (24 h / 1 h), organizer notifications, no-show follow-ups, ICS attachments, delivery log
-- Workflows: triggers (created, confirmed, cancelled, rescheduled, before start, after end, no-show) with e-mail, delay, signed webhook, Slack, Microsoft Teams and HTTP steps – SSRF-protected
-- Signed outgoing webhooks with retries and delivery log
-- Routing forms that send visitors to the right event type
-- Embed SDK: inline, popup and floating button
-- REST API v1 with scoped API keys, OpenAPI spec and TypeScript SDK; agent service API for AI assistants
-
-**Organisation & administration**
-- Organizations, teams, invitations, roles (instance admin, owner, admin, team manager, member)
-- Dashboard with today/upcoming bookings, stats, integration status and activity
-- Privacy-friendly analytics (no cookies), CSV export
-- Admin area: users, registration policy, configuration, integrations, audit/e-mail/webhook logs, failed jobs, health, JSON export
-- Data export and account deletion for every user, configurable data retention
-
-See [PROGRESS.md](PROGRESS.md) for the exact implementation and test status of every feature.
-
-## Installation
-
-### One click (recommended)
-
-1. Click **Deploy to Cloudflare** above.
-2. Cloudflare copies this repository to your GitHub/GitLab account, creates the Worker and the **D1 database** automatically.
-3. You are asked for two secrets:
-   - `SETUP_TOKEN` – any long random string (`openssl rand -hex 24`). You will type it into the setup wizard once.
-   - `ENCRYPTION_KEY` – `openssl rand -hex 32`. Encrypts OAuth tokens and provider keys. **Never change it later.**
-4. Cloudflare builds the app (`npm run build`), applies the database migrations and deploys (`npm run deploy`).
-5. Open the `*.workers.dev` URL. The **setup wizard** asks for the setup token, creates your admin account, organization and first event type, and then locks itself permanently.
-
-Details, the manual CLI route and Workers Builds (auto-deploy on push) are in [DEPLOYMENT.md](DEPLOYMENT.md).
-
-### Manual (CLI)
+## Quick start
 
 ```bash
-git clone https://github.com/darkooom/OpenMeet && cd OpenMeet
+git clone https://github.com/darkooom/OpenMeet.git
+cd OpenMeet
 npm ci
-npx wrangler login
-npx wrangler secret put SETUP_TOKEN
-npx wrangler secret put ENCRYPTION_KEY
-npm run build
-npm run deploy
-```
-
-## Local development
-
-```bash
-npm ci
-cp .dev.vars.example .dev.vars   # then put real random values in it
+cp .dev.vars.example .dev.vars   # put two long random values in it
 npm run db:migrate:local
-npm run build                    # the Worker serves the built SPA from dist/client
-npm run dev                      # wrangler dev on :8787 + Vite on :5173 (with API proxy)
+npm run build
+npx wrangler dev
 ```
 
-Open http://localhost:5173 (hot reload) or http://localhost:8787 (production-like).
+Open <http://localhost:8787>. A fresh instance starts the setup wizard: enter
+the `SETUP_TOKEN` from `.dev.vars`, create your admin account, and your first
+booking page is live a minute later.
 
-| Command | What it does |
+## What's inside
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <b>Booking pages people enjoy</b><br>
+      Calendar and time picker in the visitor's time zone, booking questions, multiple durations, confirmation with ICS file and Google Calendar link, reschedule and cancel links.
+    </td>
+    <td width="50%" valign="top">
+      <b>Every kind of meeting</b><br>
+      One-on-one, group sessions with seats, collective (all hosts) and round robin (next free host). Private and single-use links, manual confirmation.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <b>No double bookings, ever</b><br>
+      Reservations are written in one D1 transaction and checked by database triggers. 25 parallel requests for one slot produce exactly one booking, and the tests prove it.
+    </td>
+    <td valign="top">
+      <b>Your calendars, connected</b><br>
+      Google Calendar, Microsoft 365 / Outlook, CalDAV and ICS feeds for conflicts. Events are created in your calendar with Google Meet, Teams, Zoom or Jitsi links.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <b>Automation built in</b><br>
+      Reminders 24 h and 1 h before, workflows with e-mail, Slack, Teams, webhook and HTTP steps, signed webhooks with retries, and routing forms that send visitors to the right meeting.
+    </td>
+    <td valign="top">
+      <b>Made for teams and agents</b><br>
+      Organizations, teams, invitations and roles. A versioned REST API with scoped keys, OpenAPI and a TypeScript SDK, plus an agent API for AI assistants.
+    </td>
+  </tr>
+</table>
+
+## Product tour
+
+### The booking page
+
+The page your customers actually see. Free days are highlighted, times appear in the visitor's own time zone, and daylight-saving switches are handled for you.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/booking-dark.jpg">
+  <img src="docs/readme/booking-light.jpg" alt="Public booking page with month calendar and available times" width="100%">
+</picture>
+
+### Dashboard
+
+Today first, what's coming next, then what just happened. Warnings tell you when something needs attention, like a missing e-mail provider or a calendar that lost access.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/dashboard-dark.jpg">
+  <img src="docs/readme/dashboard-light.jpg" alt="Dashboard with today's meetings, upcoming bookings, stats and integration status" width="100%">
+</picture>
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/readme/event-types-dark.jpg">
+        <img src="docs/readme/event-types-light.jpg" alt="List of personal and team event types" width="100%">
+      </picture>
+      <p align="center"><b>Event types</b><br><sub>Personal and team meetings, copy link, on/off switch</sub></p>
+    </td>
+    <td width="50%" valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/readme/bookings-dark.jpg">
+        <img src="docs/readme/bookings-light.jpg" alt="Bookings list with upcoming, unconfirmed, past and cancelled tabs" width="100%">
+      </picture>
+      <p align="center"><b>Bookings</b><br><sub>Upcoming, unconfirmed, past and cancelled, with CSV export</sub></p>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/readme/availability-dark.jpg">
+        <img src="docs/readme/availability-light.jpg" alt="Availability editor with weekly hours, lunch break and date overrides" width="100%">
+      </picture>
+      <p align="center"><b>Availability</b><br><sub>Several schedules, lunch breaks, holidays and vacation</sub></p>
+    </td>
+    <td valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/readme/calendar-dark.jpg">
+        <img src="docs/readme/calendar-light.jpg" alt="Week calendar with booked meetings" width="100%">
+      </picture>
+      <p align="center"><b>Calendar</b><br><sub>Your week at a glance, in your time zone</sub></p>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/readme/workflows-dark.jpg">
+        <img src="docs/readme/workflows-light.jpg" alt="Workflow editor with trigger and e-mail step" width="100%">
+      </picture>
+      <p align="center"><b>Workflows</b><br><sub>Triggers, delays, e-mail, Slack, Teams, webhooks, HTTP</sub></p>
+    </td>
+    <td valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/readme/teams-dark.jpg">
+        <img src="docs/readme/teams-light.jpg" alt="Teams page with members, roles and invitations" width="100%">
+      </picture>
+      <p align="center"><b>Teams</b><br><sub>Organizations, members, roles and invitations</sub></p>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/readme/analytics-dark.jpg">
+        <img src="docs/readme/analytics-light.jpg" alt="Analytics with bookings by event type, member, source and popular times" width="100%">
+      </picture>
+      <p align="center"><b>Analytics</b><br><sub>Cancellation and no-show rates, sources, UTM, popular times, without cookies</sub></p>
+    </td>
+    <td valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/readme/admin-dark.jpg">
+        <img src="docs/readme/admin-light.jpg" alt="Administration with health, database and job status" width="100%">
+      </picture>
+      <p align="center"><b>Administration</b><br><sub>Users, configuration, integrations, logs, failed jobs, export</sub></p>
+    </td>
+  </tr>
+</table>
+
+### Light and dark, both first-class
+
+Both themes come from one set of tokens: cool paper and graphite, with a calm
+fern green that is reserved for actions and confirmed states. The images in this
+README follow your GitHub theme. Switch it to see the other one.
+
+### Built for the phone
+
+Most people book from their phone. The booking flow works one-handed on small screens.
+
+<p align="center">
+  <img src="docs/readme/mobile-booking.jpg" alt="Booking page on a phone" width="32%">
+  &nbsp;
+  <img src="docs/readme/mobile-form.jpg" alt="Booking form on a phone" width="32%">
+</p>
+
+## One click, your account
+
+| Step | What happens |
 | --- | --- |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | TypeScript (Worker, web, tooling) |
-| `npm run test:unit` | Slot engine, time zones/DST, crypto, SSRF, ICS, routing |
-| `npm run test:integration` | API + D1 in workerd: auth, setup, tenancy, concurrency, integrations |
-| `npm run test:e2e` | Playwright: fresh install → setup → booking → reschedule → cancel |
-| `npm run check:deploy` | Build + `wrangler deploy --dry-run` |
+| Deploy | Cloudflare copies this repository to your GitHub or GitLab account and creates the Worker |
+| Database | A D1 database is provisioned and bound automatically. No IDs live in this repository |
+| Secrets | You set `SETUP_TOKEN` and `ENCRYPTION_KEY`, two random strings |
+| Build | `npm run build`, then `npm run deploy` applies the database migrations and deploys |
+| Setup | Open your `*.workers.dev` URL. The token-protected wizard creates the admin and locks itself |
+| Updates | Every push to `main` redeploys through Workers Builds |
 
-## Custom domain
-
-OpenMeet works on `workers.dev` out of the box. To use e.g. `meet.example.com`: add it under **Worker → Settings → Domains & Routes → Custom domain**, then set the **Public URL** in Administration → Configuration (and optionally the `ALLOWED_HOSTS` variable). Update OAuth redirect URIs afterwards. See [DEPLOYMENT.md](DEPLOYMENT.md#custom-domain).
-
-## Integrations setup
-
-- [Google OAuth / Calendar / Meet](docs/integrations.md#google)
-- [Microsoft 365 / Outlook / Teams](docs/integrations.md#microsoft)
-- [Zoom](docs/integrations.md#zoom)
-- [E-mail providers (Resend, Brevo, Postmark)](docs/integrations.md#e-mail)
-- [Embedding on your website (HTML, React, Next.js, WordPress, Webflow)](docs/embed.md)
+A custom domain such as `meet.example.com` is optional and takes two minutes; see [DEPLOYMENT.md](./DEPLOYMENT.md#custom-domain).
 
 ## Architecture
 
-One Worker, one database:
+Everything runs in a single Worker. The API and the React app ship together,
+the database is D1, and a cron trigger drains a persistent job queue for
+e-mails, reminders, calendar sync, workflows and webhooks.
 
+```mermaid
+flowchart LR
+    V["Visitors<br/>booking pages · embeds"] --> W
+    T["Your team<br/>dashboard"] --> W
+    A["API clients<br/>SDK · AI agents"] --> W
+    W["Cloudflare Worker<br/><code>Hono API</code> · <code>React SPA</code>"] --> D[("D1<br/>SQLite + triggers")]
+    C["Cron · every minute"] --> J["Job queue<br/>retries · backoff"]
+    J --> D
+    J --> E["E-mail<br/>Resend · Brevo · Postmark"]
+    J --> K["Calendars<br/>Google · Microsoft · CalDAV"]
+    J --> H["Webhooks · Slack · Teams"]
 ```
-Browser ──► Cloudflare Worker (Hono)
-             ├─ /api/*, /auth/*  → API, OAuth callbacks
-             ├─ everything else  → static React SPA (Workers Static Assets)
-             ├─ Cron (every min) → job queue: e-mails, reminders, workflows, webhooks, calendar sync
-             └─ D1 (SQLite)      → all data; triggers enforce no double bookings
+
+Integrations are adapters behind small interfaces in `src/server/integrations`.
+Adding a calendar or e-mail provider means writing one adapter, not touching the
+booking engine. Details and trade-offs: [ARCHITECTURE.md](./ARCHITECTURE.md).
+
+## Integrations
+
+Everything is optional. Without any provider OpenMeet still books meetings, generates Jitsi links and tells you clearly which features are off.
+
+<details>
+  <summary><b>E-mail</b> (Resend, Brevo, Postmark)</summary>
+
+Administration → Integrations → E-mail provider. Add the API key and a verified
+sender, then use **Send test e-mail**. Confirmations, reminders, cancellations and
+reschedules are sent in English or German with ICS attachments.
+
+</details>
+
+<details>
+  <summary><b>Google</b> (sign-in, Calendar, Meet)</summary>
+
+Create an OAuth client in Google Cloud, enable the Calendar API and add
+`https://<your-domain>/auth/oauth/google/callback` as redirect URI. Paste client ID
+and secret in Administration → Integrations. Step by step: [docs/integrations.md](./docs/integrations.md#google).
+
+</details>
+
+<details>
+  <summary><b>Microsoft</b> (sign-in, Outlook, Teams)</summary>
+
+Register an app in Microsoft Entra with `Calendars.ReadWrite`, `User.Read` and
+`offline_access`, redirect URI `https://<your-domain>/auth/oauth/microsoft/callback`.
+Step by step: [docs/integrations.md](./docs/integrations.md#microsoft).
+
+</details>
+
+<details>
+  <summary><b>Zoom, CalDAV, ICS feeds</b></summary>
+
+See [docs/integrations.md](./docs/integrations.md). CalDAV works with iCloud,
+Fastmail and Nextcloud using app passwords; any calendar's iCal address can be
+added as a read-only conflict source.
+
+</details>
+
+<details>
+  <summary><b>Embed on your website</b></summary>
+
+```html
+<button data-openmeet="maya/intro">Book a call</button>
+<script src="https://meet.example.com/embed.js" async></script>
 ```
 
-Read [ARCHITECTURE.md](ARCHITECTURE.md) for the data model, the booking-atomicity design, the job system and the trade-offs.
+Inline widget, popup and floating button, with guides for React, Next.js,
+WordPress and Webflow in [docs/embed.md](./docs/embed.md).
 
-## API
+</details>
 
-- OpenAPI: `GET /api/v1/openapi.json` on your instance
-- Guide: [docs/api.md](docs/api.md) – API keys, scopes, pagination, idempotency, webhooks, agent API
-- TypeScript SDK: [sdk/](sdk/)
+<details>
+  <summary><b>API, SDK and AI agents</b></summary>
 
-## Backup and restore
+```ts
+import { OpenMeet } from "@openmeet/sdk";
 
-D1 Time Travel gives point-in-time recovery for 30 days; `wrangler d1 export` creates SQL dumps. See [docs/backup-restore.md](docs/backup-restore.md).
+const om = new OpenMeet({ baseUrl: "https://meet.example.com", apiKey: process.env.OPENMEET_API_KEY! });
+const { data } = await om.availability({ eventTypeId: "…" });
+await om.createBooking({ eventTypeId: "…", start: data.slots[0].startMs, name: "Ada", email: "ada@example.com", timezone: "Europe/Berlin" });
+```
 
-## Troubleshooting
+Scoped API keys, cursor pagination, idempotency keys, signed webhooks and an
+OpenAPI document at `/api/v1/openapi.json`. Service tokens with the `agent` scope
+let assistants check availability, book, reschedule and cancel, with every call
+in the audit log. See [docs/api.md](./docs/api.md).
 
-| Problem | Fix |
+</details>
+
+## Going to production
+
+- [ ] Deploy with the button and set `SETUP_TOKEN` and `ENCRYPTION_KEY`
+- [ ] Finish the setup wizard (it locks itself afterwards)
+- [ ] Configure an e-mail provider and send a test e-mail
+- [ ] Add Google or Microsoft OAuth apps if your team should connect calendars
+- [ ] Connect a custom domain and set the public URL
+- [ ] Set up backups with D1 Time Travel or `wrangler d1 export` ([guide](./docs/backup-restore.md))
+- [ ] Store `ENCRYPTION_KEY` in your password manager. Never rotate it without reconnecting integrations
+
+## Project structure
+
+```text
+src/
+├── server/              Cloudflare Worker (Hono)
+│   ├── routes/          API: setup, auth, dashboard, public, admin, v1 + agent
+│   ├── services/        Slot engine, booking engine, jobs, notifications, workflows
+│   ├── integrations/    Calendar, e-mail, meeting and OAuth adapters
+│   ├── security/        Crypto, SSRF guard, rate limits, redaction
+│   └── middleware/      Context, sessions, API keys, CSRF
+├── web/                 React app: dashboard, booking pages, setup wizard
+├── components/ui/       shadcn-style UI primitives
+├── shared/              Zod schemas and time-zone math used on both sides
+└── database/            Drizzle schema and runtime migrator
+migrations/              D1 SQL migrations (incl. booking triggers)
+public/                  embed.js, security headers, icons
+sdk/                     TypeScript SDK
+tests/                   Unit, integration (workerd + D1) and Playwright E2E
+```
+
+| Command | What it does |
 | --- | --- |
-| Setup wizard says the token is missing | Add `SETUP_TOKEN` and `ENCRYPTION_KEY` (≥ 32 chars) as Worker secrets and reload. |
-| "Invalid setup token" | Compare with the secret you set; it is case-sensitive. After 10 attempts wait 15 minutes. |
-| No e-mails arrive | Administration → Integrations → e-mail provider; check the E-mail log. Sender domain must be verified at the provider. |
-| Booking page shows "does not exist" | The owner must confirm their e-mail (only when an e-mail provider is configured) and the event type must be active and not private. |
-| OAuth "redirect_uri_mismatch" | The redirect URI shown in Administration must match exactly the one in the Google/Microsoft console. Set the Public URL first. |
-| Calendar shows an error | Integrations → Sync. "revoked" means the user withdrew access – reconnect. |
-| Reminders are late | Cron triggers run every minute; check Administration → Failed jobs. |
+| `npm run dev` | Worker on :8787 and Vite with hot reload on :5173 |
+| `npm run build` | Build the React app into `dist/client` |
+| `npm run deploy` | Apply migrations and deploy to Cloudflare |
+| `npm run typecheck` | Type-check Worker, web app and tooling |
+| `npm run lint` | Run ESLint |
+| `npm run test` | Unit and integration tests (real D1 in workerd) |
+| `npm run test:e2e` | Fresh install to booking, reschedule and cancel in Playwright |
+| `npm run check:deploy` | Build and `wrangler deploy --dry-run` |
+| `npm run readme:screens` | Regenerate the screenshots in this README |
 
-## Security
+## Status
 
-See [SECURITY.md](SECURITY.md) for the security model and how to report vulnerabilities.
+Version 0.1. The core (setup, booking engine, availability, teams, workflows,
+API) is implemented and tested. Some provider integrations are implemented but
+not yet verified against live accounts. [PROGRESS.md](./PROGRESS.md) lists the
+exact status of every feature and the known gaps.
+
+## Contributing and security
+
+Issues and pull requests are welcome. Run `npm run lint`, `npm run typecheck` and
+`npm run test` before opening a pull request. Please report vulnerabilities
+privately through
+[GitHub Private Vulnerability Reporting](https://github.com/darkooom/OpenMeet/security/advisories/new),
+not in a public issue. The security model is described in [SECURITY.md](./SECURITY.md).
 
 ## License
 
-[AGPL-3.0-only](LICENSE). If you run a modified version as a network service, you must offer its source code to its users. Third-party licenses: [docs/third-party-licenses.md](docs/third-party-licenses.md).
+[AGPL-3.0](./LICENSE). Free to use, modify and self-host. If you offer a modified
+version as a network service, you must share its source code with its users.
+Third-party licenses: [docs/third-party-licenses.md](./docs/third-party-licenses.md).
